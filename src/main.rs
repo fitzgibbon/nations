@@ -1,39 +1,33 @@
-// Draw some multi-colored geometry to the screen
+#[macro_use]
+extern crate derive_more;
+mod geometry;
+
 use quicksilver::{
+    geom::{Rectangle, Vector},     // We'll need to import Rectangle now
+    graphics::{Background, Color}, // Also Background and Color
+    lifecycle::{run, State, Window},
     Result,
-    geom::{Circle, Line, Rectangle, Transform, Triangle, Vector},
-    graphics::{Background::Col, Color},
-    lifecycle::{Settings, State, Window, run},
 };
 
-struct DrawGeometry;
+struct Screen;
 
-impl State for DrawGeometry {
-    fn new() -> Result<DrawGeometry> {
-        Ok(DrawGeometry)
+impl State for Screen {
+    fn new() -> Result<Screen> {
+        Ok(Screen)
     }
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
+        // Clear the contents of the window to a white background
         window.clear(Color::WHITE)?;
-        window.draw(&Rectangle::new((100, 100), (32, 32)), Col(Color::BLUE));
-        window.draw_ex(&Rectangle::new((400, 300), (32, 32)), Col(Color::BLUE), Transform::rotate(45), 10);
-        window.draw(&Circle::new((400, 300), 100), Col(Color::GREEN));
-        window.draw_ex(
-            &Line::new((50, 80),(600, 450)).with_thickness(2.0),
-            Col(Color::RED),
-            Transform::IDENTITY,
-            5
-        );
-        window.draw_ex(
-            &Triangle::new((500, 50), (450, 100), (650, 150)),
-            Col(Color::RED),
-            Transform::rotate(45) * Transform::scale((0.5, 0.5)),
-            0
+        // Draw a red rectangle
+        window.draw(
+            &Rectangle::new((50, 50), (100, 200)),
+            Background::Col(Color::RED),
         );
         Ok(())
     }
 }
 
 fn main() {
-    run::<DrawGeometry>("Draw Geometry", Vector::new(800, 600), Settings::default());
+    run::<Screen>("Hello World", Vector::new(800, 600), Default::default());
 }
