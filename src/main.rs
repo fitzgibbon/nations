@@ -24,6 +24,11 @@ impl State for Screen {
             &Rectangle::new((50, 50), (100, 200)),
             Background::Col(Color::RED),
         );
+        // Draw a green hexagon
+        window.draw(
+            &geometry::HexShape::new(Vector::new(300, 300), Vector::new(200, 200)),
+            Background::Col(Color::GREEN),
+        );
         Ok(())
     }
 }

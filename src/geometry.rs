@@ -1,7 +1,12 @@
 use nalgebra::Vector3;
+use quicksilver::{
+    geom::{Scalar, Transform, Triangle, Vector},
+    graphics::{Background, Drawable, GpuTriangle, Mesh},
+};
 use std::cmp::{max, min, Ordering};
 
-/// We use cube coordinates as described at https://www.redblobgames.com/grids/hexagons/ and https://www.redblobgames.com/grids/hexagons/implementation.html
+/// We use cube coordinates as described at https://www.redblobgames.com/grids/hexagons/
+/// and https://www.redblobgames.com/grids/hexagons/implementation.html
 trait Coord {
     type Scalar;
     fn cmp_len(&self, length: Self::Scalar) -> Ordering;
@@ -73,6 +78,57 @@ trait HexTiling {
 
     fn new() -> Self;
     fn origin() -> Self::HexCoord;
+}
+
+pub struct HexShape {
+    pos: Vector,
+    size: Vector,
+}
+
+impl HexShape {
+    pub fn new(pos: Vector, size: Vector) -> HexShape {
+        HexShape { pos, size }
+    }
+}
+
+impl Drawable for HexShape {
+    fn draw<'a>(
+        &self,
+        mesh: &mut Mesh,
+        background: Background<'a>,
+        transform: Transform,
+        z: impl Scalar,
+    ) {
+        // A hexagon rendered as 4 triangles
+        let x_a = 0.0;
+        let y_a = -self.size.y / 2.0;
+        let x_b = self.size.x / 2.0;
+        let y_b = -self.size.y / 4.0;
+        let tri_top = Triangle::new(
+            self.pos + Vector::new(-x_b, y_b),
+            self.pos + Vector::new(x_a, y_a),
+            self.pos + Vector::new(x_b, y_b),
+        );
+        let tri_mid_a = Triangle::new(
+            self.pos + Vector::new(-x_b, y_b),
+            self.pos + Vector::new(x_b, y_b),
+            self.pos + Vector::new(x_b, -y_b),
+        );
+        let tri_mid_b = Triangle::new(
+            self.pos + Vector::new(x_b, -y_b),
+            self.pos + Vector::new(-x_b, -y_b),
+            self.pos + Vector::new(-x_b, y_b),
+        );
+        let tri_bot = Triangle::new(
+            self.pos + Vector::new(x_b, -y_b),
+            self.pos + Vector::new(-x_a, -y_a),
+            self.pos + Vector::new(-x_b, -y_b),
+        );
+        tri_top.draw(mesh, background, transform, z);
+        tri_mid_a.draw(mesh, background, transform, z);
+        tri_mid_b.draw(mesh, background, transform, z);
+        tri_bot.draw(mesh, background, transform, z);
+    }
 }
 
 #[cfg(test)]
