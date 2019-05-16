@@ -21,12 +21,13 @@ impl State for Screen {
         window.clear(Color::WHITE)?;
         // Draw a red rectangle
         window.draw(
-            &Rectangle::new((50, 50), (100, 200)),
+            &Rectangle::new((200, 200), (200, 200)),
             Background::Col(Color::RED),
         );
         // Draw a green hexagon
         window.draw(
-            &geometry::HexShape::new(Vector::new(300, 300), Vector::new(200, 200)),
+            //&geometry::HexShape::new(Vector::new(300, 300), Vector::new(200, 200)),
+            &geometry::HexShape::with_radius(Vector::new(300, 300), 100.0),
             Background::Col(Color::GREEN),
         );
         Ok(())

@@ -89,6 +89,10 @@ impl HexShape {
     pub fn new(pos: Vector, size: Vector) -> HexShape {
         HexShape { pos, size }
     }
+
+    pub fn with_radius(pos: Vector, radius: f32) -> HexShape {
+        HexShape::new(pos, Vector::new(radius * (3.0 as f32).sqrt(), radius * 2.0))
+    }
 }
 
 impl Drawable for HexShape {
