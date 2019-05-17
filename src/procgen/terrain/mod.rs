@@ -4,9 +4,9 @@ use crate::procgen::noise::Noise;
 use crate::procgen::procseed::ProcSeed;
 use std::f64::consts::PI;
 
-//use cursive::theme::Color;
+use quicksilver::graphics::Color;
 
-use rand;
+extern crate rand;
 
 pub trait Terrain {
     fn get_height(&self, seed: &ProcSeed, point: &Vec<f64>) -> f64;
@@ -14,7 +14,7 @@ pub trait Terrain {
     fn get_temperature(&self, seed: &ProcSeed, point: &Vec<f64>) -> f64;
     fn get_map_texture(&self, seed: &ProcSeed, point: &Vec<f64>) -> f64;
     fn get_biome(&self, seed: &ProcSeed, point: &Vec<f64>) -> MapBiome;
-    //fn render_cursive(&self, seed: &ProcSeed, point: &Vec<f64>) -> (char, Color, Color);
+    fn render_qs(&self, seed: &ProcSeed, point: &Vec<f64>) -> (Color, Color);
 }
 
 pub struct TiledWorldTerrain {
@@ -170,6 +170,39 @@ impl Terrain for TiledWorldTerrain {
             MapBiome::Mountain
         }
     }
+    fn render_qs(&self, seed: &ProcSeed, point: &Vec<f64>) -> (Color, Color) {
+        let (c, fg, _) = match self.get_biome(seed, point) {
+            MapBiome::Empty => ('.', vec![1.0, 1.0, 1.0], vec![0.0, 0.0, 0.0]),
+            MapBiome::Water => (
+                '~',
+                color_lerp(
+                    &vec![0.0, 0.0, 0.3],
+                    &vec![0.0, 0.4, 0.9],
+                    (self.get_height(seed, point) / 0.55).powi(3),
+                ),
+                vec![0.0, 0.0, 0.4],
+            ),
+            MapBiome::Ice => ('.', vec![0.7, 0.7, 1.0], vec![1.0, 1.0, 1.0]),
+            MapBiome::Tundra => (':', vec![0.5, 0.8, 0.4], vec![0.8, 0.9, 0.8]),
+            MapBiome::BorealForest => ('T', vec![0.4, 0.7, 0.4], vec![0.6, 0.9, 0.6]),
+            MapBiome::Shrubland => (';', vec![0.5, 0.6, 0.2], vec![0.6, 0.8, 0.4]),
+            MapBiome::TemperateGrassland => ('.', vec![0.3, 0.7, 0.2], vec![0.6, 0.8, 0.5]),
+            MapBiome::TemperateRainforest => ('T', vec![0.2, 0.6, 0.4], vec![0.5, 0.8, 0.5]),
+            MapBiome::TemperateSeasonalForest => ('t', vec![0.6, 0.8, 0.3], vec![0.6, 0.8, 0.4]),
+            MapBiome::TropicalRainforest => ('T', vec![0.2, 0.8, 0.2], vec![0.1, 0.5, 0.1]),
+            MapBiome::TropicalSeasonalForest => ('t', vec![0.5, 0.7, 0.1], vec![0.2, 0.6, 0.1]),
+            MapBiome::Savannah => ('.', vec![0.5, 0.7, 0.1], vec![0.6, 0.8, 0.4]),
+            MapBiome::Desert => ('~', vec![0.9, 0.8, 0.2], vec![0.8, 0.6, 0.6]),
+            MapBiome::Mountain => ('^', vec![0.8, 0.8, 0.8], vec![0.4, 0.4, 0.4]),
+        };
+        (
+            color_to_cursive_color(&fg),
+            color_to_cursive_color(&color_brightness(
+                &fg,
+                0.3 + 0.7 * self.get_map_texture(seed, point),
+            )),
+        )
+    }
 }
 
 fn color_brightness(color: &Vec<f64>, brightness: f64) -> Vec<f64> {
@@ -180,4 +213,13 @@ fn color_lerp(color_a: &Vec<f64>, color_b: &Vec<f64>, lerp: f64) -> Vec<f64> {
     (0..3)
         .map(|i| color_a[i] + (color_b[i] - color_a[i]) * lerp)
         .collect()
+}
+
+fn color_to_cursive_color(color: &Vec<f64>) -> Color {
+    Color {
+        r: color[0] as f32,
+        g: color[1] as f32,
+        b: color[2] as f32,
+        a: 1.0,
+    }
 }

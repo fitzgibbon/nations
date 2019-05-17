@@ -1,7 +1,9 @@
 #[macro_use]
 extern crate derive_more;
+mod game;
 mod geometry;
 mod procgen;
+use game::world::GameWorld;
 use procgen::noise::Noise;
 
 use quicksilver::{
@@ -13,20 +15,18 @@ use quicksilver::{
 
 struct Screen {
     seed: procgen::procseed::ProcSeed,
-    height_map: procgen::noise::simplex_noise::SkewedTiledOctavedSimplexNoise,
+    world: game::world::TiledGameWorld,
 }
 
 impl State for Screen {
     fn new() -> Result<Screen> {
         Ok(Screen {
             seed: procgen::procseed::ProcSeed::new(&0u32, 0.0),
-            height_map: procgen::noise::simplex_noise::SkewedTiledOctavedSimplexNoise::new(
-                2, 4, 0.7, 1.0, 0.5,
-            ),
+            world: game::world::TiledGameWorld::new(800, (800.0 * 0.75) as usize),
         })
     }
 
-    fn update(&mut self, window: &mut Window) -> Result<()> {
+    fn update(&mut self, _window: &mut Window) -> Result<()> {
         self.seed.skew += 0.005;
         Ok(())
     }
@@ -35,20 +35,24 @@ impl State for Screen {
         // Clear the contents of the window to a white background
         window.clear(Color::WHITE)?;
 
-        geometry::HexManhattanIterator::new(15)
-            .map(|x| geometry::HexShape::with_radius_on_grid(x, Vector::new(400, 300), 10.0))
+        geometry::HexManhattanIterator::new(20)
+            .map(|x| geometry::HexShape::with_radius_on_grid(x, Vector::new(400, 400), 10.0))
             .enumerate()
-            .for_each(|(i, x)| {
+            .for_each(|(_i, x)| {
                 window.draw(
                     &x,
-                    Background::Col(Color::BLUE.with_alpha(
-                        self.height_map.get_noise(
-                            &self.seed,
-                            &vec![(x.pos.x / 150.0) as f64, (x.pos.y / 150.0) as f64],
-                        ) as f32
-                            * 0.5
-                            + 0.5,
-                    )),
+                    Background::Col(
+                        self.world
+                            .render_qs(
+                                &self.seed,
+                                &game::world::GameWorldOffset::new(
+                                    (x.pos.x - 400.0) as i64,
+                                    (x.pos.y - 400.0) as i64,
+                                    0,
+                                ),
+                            )
+                            .1,
+                    ),
                 )
             });
 
@@ -57,5 +61,5 @@ impl State for Screen {
 }
 
 fn main() {
-    run::<Screen>("Hello World", Vector::new(800, 600), Default::default());
+    run::<Screen>("Hello World", Vector::new(800, 800), Default::default());
 }

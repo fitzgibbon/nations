@@ -6,5 +6,5 @@ script:
   - cargo test
   - cargo web build --release
 before_install:
-  - sudo apt-get install -y alsa alsa-utils
+  - sudo apt-get install -y libasound2-dev alsa alsa-utils
   - cargo install cargo-web
