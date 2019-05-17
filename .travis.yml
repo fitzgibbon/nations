@@ -5,6 +5,6 @@ script:
   - cargo build
   - cargo test
   - cargo web build --release
-  before_install:
+before_install:
   - sudo apt-get install -y alsa alsa-utils
   - cargo install cargo-web
