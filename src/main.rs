@@ -35,8 +35,8 @@ impl State for Screen {
         // Clear the contents of the window to a white background
         window.clear(Color::WHITE)?;
 
-        geometry::HexManhattanIterator::new(20)
-            .map(|x| geometry::HexShape::with_radius_on_grid(x, Vector::new(400, 400), 10.0))
+        geometry::HexManhattanIterator::new(40)
+            .map(|x| geometry::HexShape::with_radius_on_grid(x, Vector::new(400, 400), 5.0))
             .enumerate()
             .for_each(|(_i, x)| {
                 window.draw(
@@ -61,5 +61,7 @@ impl State for Screen {
 }
 
 fn main() {
-    run::<Screen>("Hello World", Vector::new(800, 800), Default::default());
+    let mut settings: quicksilver::lifecycle::Settings = Default::default();
+    settings.update_rate = 500.0;
+    run::<Screen>("Hello World", Vector::new(800, 800), settings);
 }
