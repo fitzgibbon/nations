@@ -26,10 +26,22 @@ impl State for Screen {
         );
         // Draw a green hexagon
         window.draw(
-            //&geometry::HexShape::new(Vector::new(300, 300), Vector::new(200, 200)),
-            &geometry::HexShape::with_radius(Vector::new(300, 300), 100.0),
+            &geometry::HexShape::with_size(Vector::new(300, 300), Vector::new(200, 200)),
             Background::Col(Color::GREEN),
         );
+
+        geometry::HexManhattanIterator::new(9)
+            .map(|x| {
+                geometry::HexShape::with_size_on_grid(x, Vector::new(400, 300), Vector::new(30, 30))
+            })
+            .enumerate()
+            .for_each(|(i, x)| {
+                window.draw(
+                    &x,
+                    Background::Col(Color::BLUE.with_alpha((i % 16) as f32 * (0.5 / 16.0) + 0.5)),
+                )
+            });
+
         Ok(())
     }
 }

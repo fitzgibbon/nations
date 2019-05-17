@@ -39,14 +39,14 @@ impl Coord for Hex {
     }
 }
 
-struct HexManhattanIterator {
+pub struct HexManhattanIterator {
     x: isize,
     y: isize,
     length: isize,
 }
 
 impl HexManhattanIterator {
-    fn new(length: isize) -> Self {
+    pub fn new(length: isize) -> Self {
         HexManhattanIterator {
             x: -length,
             y: 0,
@@ -86,12 +86,27 @@ pub struct HexShape {
 }
 
 impl HexShape {
-    pub fn new(pos: Vector, size: Vector) -> HexShape {
+    pub fn with_size(pos: Vector, size: Vector) -> HexShape {
         HexShape { pos, size }
     }
 
     pub fn with_radius(pos: Vector, radius: f32) -> HexShape {
-        HexShape::new(pos, Vector::new(radius * (3.0 as f32).sqrt(), radius * 2.0))
+        HexShape::with_size(pos, Vector::new(radius * 3.0f32.sqrt(), radius * 2.0))
+    }
+
+    pub fn with_size_on_grid(grid_pos: Hex, grid_origin: Vector, size: Vector) -> HexShape {
+        HexShape {
+            pos: Vector::new(
+                grid_origin.x + grid_pos.x as f32 * size.x + grid_pos.y as f32 * 0.5 * size.x,
+                grid_origin.y + grid_pos.y as f32 * 0.75 * size.y,
+            ),
+            size,
+        }
+    }
+
+    pub fn with_radius_on_grid(grid_pos: Hex, grid_origin: Vector, radius: f32) -> HexShape {
+        let size = Vector::new(radius * 3.0f32.sqrt(), radius * 2.0);
+        HexShape::with_size_on_grid(grid_pos, grid_origin, size)
     }
 }
 
