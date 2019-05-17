@@ -2,14 +2,13 @@ language: rust
 rust:
   - stable
 script:
-  - cargo build
-  - cargo test
-  - cargo web build --release
+  - cargo web deploy --release
 before_install:
   - sudo apt-get install -y libasound2-dev alsa alsa-utils libudev-dev
   - cargo install cargo-web
 deploy:
   provider: pages
+  local_dir: target/deploy
   skip_cleanup: true
   github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
   keep_history: true
