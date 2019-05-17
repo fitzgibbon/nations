@@ -12,6 +12,7 @@ trait Coord {
     fn cmp_len(&self, length: Self::Scalar) -> Ordering;
     fn manhattan(&self) -> Self::Scalar;
     fn manhattan_iter(length: Self::Scalar) -> Box<Iterator<Item = Self>>;
+    fn to_cartesian(&self, size: Vector) -> Vector;
 }
 
 type Hex = Vector3<isize>;
@@ -36,6 +37,13 @@ impl Coord for Hex {
 
     fn manhattan_iter(length: Self::Scalar) -> Box<Iterator<Item = Self>> {
         Box::new(HexManhattanIterator::new(length))
+    }
+
+    fn to_cartesian(&self, size: Vector) -> Vector {
+        Vector::new(
+            self.x as f32 * size.x + self.y as f32 * 0.5 * size.x,
+            self.y as f32 * 0.75 * size.y,
+        )
     }
 }
 
@@ -81,8 +89,8 @@ trait HexTiling {
 }
 
 pub struct HexShape {
-    pos: Vector,
-    size: Vector,
+    pub pos: Vector,
+    pub size: Vector,
 }
 
 impl HexShape {
@@ -96,10 +104,7 @@ impl HexShape {
 
     pub fn with_size_on_grid(grid_pos: Hex, grid_origin: Vector, size: Vector) -> HexShape {
         HexShape {
-            pos: Vector::new(
-                grid_origin.x + grid_pos.x as f32 * size.x + grid_pos.y as f32 * 0.5 * size.x,
-                grid_origin.y + grid_pos.y as f32 * 0.75 * size.y,
-            ),
+            pos: grid_pos.to_cartesian(size) + grid_origin,
             size,
         }
     }

@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate derive_more;
 mod geometry;
+mod procgen;
+use procgen::noise::Noise;
 
 use quicksilver::{
     geom::{Rectangle, Vector},     // We'll need to import Rectangle now
@@ -9,36 +11,44 @@ use quicksilver::{
     Result,
 };
 
-struct Screen;
+struct Screen {
+    seed: procgen::procseed::ProcSeed,
+    height_map: procgen::noise::simplex_noise::SkewedTiledOctavedSimplexNoise,
+}
 
 impl State for Screen {
     fn new() -> Result<Screen> {
-        Ok(Screen)
+        Ok(Screen {
+            seed: procgen::procseed::ProcSeed::new(&0u32, 0.0),
+            height_map: procgen::noise::simplex_noise::SkewedTiledOctavedSimplexNoise::new(
+                2, 4, 0.7, 1.0, 0.5,
+            ),
+        })
+    }
+
+    fn update(&mut self, window: &mut Window) -> Result<()> {
+        self.seed.skew += 0.005;
+        Ok(())
     }
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
         // Clear the contents of the window to a white background
         window.clear(Color::WHITE)?;
-        // Draw a red rectangle
-        window.draw(
-            &Rectangle::new((200, 200), (200, 200)),
-            Background::Col(Color::RED),
-        );
-        // Draw a green hexagon
-        window.draw(
-            &geometry::HexShape::with_size(Vector::new(300, 300), Vector::new(200, 200)),
-            Background::Col(Color::GREEN),
-        );
 
-        geometry::HexManhattanIterator::new(9)
-            .map(|x| {
-                geometry::HexShape::with_size_on_grid(x, Vector::new(400, 300), Vector::new(30, 30))
-            })
+        geometry::HexManhattanIterator::new(15)
+            .map(|x| geometry::HexShape::with_radius_on_grid(x, Vector::new(400, 300), 10.0))
             .enumerate()
             .for_each(|(i, x)| {
                 window.draw(
                     &x,
-                    Background::Col(Color::BLUE.with_alpha((i % 16) as f32 * (0.5 / 16.0) + 0.5)),
+                    Background::Col(Color::BLUE.with_alpha(
+                        self.height_map.get_noise(
+                            &self.seed,
+                            &vec![(x.pos.x / 150.0) as f64, (x.pos.y / 150.0) as f64],
+                        ) as f32
+                            * 0.5
+                            + 0.5,
+                    )),
                 )
             });
 
